@@ -1,0 +1,7 @@
+■統計情報収集サンプル（Oracle）
+exec DBMS_STATS.GATHER_TABLE_STATS(OWNNAME =>'<スキーマ名>', TABNAME =>'Shops');
+exec DBMS_STATS.GATHER_TABLE_STATS(OWNNAME =>'<スキーマ名>', TABNAME =>'Reservations');
+
+■統計情報収集サンプル（PostgreSQL）
+ANALYZE Shops;
+ANALYZE Reservations;

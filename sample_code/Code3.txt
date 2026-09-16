@@ -1,0 +1,214 @@
+■「図3.1::商品テーブルのサンプル」を作成
+
+CREATE TABLE Items
+(   item_id     INTEGER  NOT NULL, 
+       year     INTEGER  NOT NULL, 
+  item_name     CHAR(32) NOT NULL, 
+  price_tax_ex  INTEGER  NOT NULL, 
+  price_tax_in  INTEGER  NOT NULL, 
+  PRIMARY KEY (item_id, year));
+
+INSERT INTO Items VALUES(100,	2000,	'カップ'	,500,	525);
+INSERT INTO Items VALUES(100,	2001,	'カップ'	,520,	546);
+INSERT INTO Items VALUES(100,	2002,	'カップ'	,600,	630);
+INSERT INTO Items VALUES(100,	2003,	'カップ'	,600,	630);
+INSERT INTO Items VALUES(101,	2000,	'スプーン'	,500,	525);
+INSERT INTO Items VALUES(101,	2001,	'スプーン'	,500,	525);
+INSERT INTO Items VALUES(101,	2002,	'スプーン'	,500,	525);
+INSERT INTO Items VALUES(101,	2003,	'スプーン'	,500,	525);
+INSERT INTO Items VALUES(102,	2000,	'ナイフ'	,600,	630);
+INSERT INTO Items VALUES(102,	2001,	'ナイフ'	,550,	577);
+INSERT INTO Items VALUES(102,	2002,	'ナイフ'	,550,	577);
+INSERT INTO Items VALUES(102,	2003,	'ナイフ'	,400,	420);
+
+■リスト3.1 UNIONを使った条件分岐
+SELECT item_name, year, price_tax_ex AS price
+  FROM Items
+ WHERE year <= 2001
+UNION ALL
+SELECT item_name, year, price_tax_in AS price
+  FROM Items
+ WHERE year >= 2002;
+
+■リスト3.2 SELECT句における条件分岐
+SELECT item_name, year,
+       CASE WHEN year <= 2001 THEN price_tax_ex
+            WHEN year >= 2002 THEN price_tax_in END AS price
+  FROM Items;
+
+
+■「図3.7::人口テーブルのサンプル」を作成
+CREATE TABLE Population
+(prefecture VARCHAR(32),
+ sex        CHAR(1),
+ pop        INTEGER,
+     CONSTRAINT pk_pop PRIMARY KEY(prefecture, sex));
+
+INSERT INTO Population VALUES('徳島', '1', 60);
+INSERT INTO Population VALUES('徳島', '2', 40);
+INSERT INTO Population VALUES('香川', '1', 90);
+INSERT INTO Population VALUES('香川', '2',100);
+INSERT INTO Population VALUES('愛媛', '1',100);
+INSERT INTO Population VALUES('愛媛', '2', 50);
+INSERT INTO Population VALUES('高知', '1',100);
+INSERT INTO Population VALUES('高知', '2',100);
+INSERT INTO Population VALUES('福岡', '1', 20);
+INSERT INTO Population VALUES('福岡', '2',200);
+
+
+■リスト3.3 UNIONによる解
+SELECT prefecture, SUM(pop_men) AS pop_men, SUM(pop_wom) AS pop_wom
+  FROM ( SELECT prefecture, pop AS pop_men, null AS pop_wom
+           FROM Population
+          WHERE sex = '1' --男性
+         UNION
+         SELECT prefecture, NULL AS pop_men, pop AS pop_wom
+           FROM Population
+          WHERE sex = '2') TMP --女性
+ GROUP BY prefecture;
+
+■リスト3.4 CASE式による解
+SELECT prefecture,
+       SUM(CASE WHEN sex = '1' THEN pop ELSE 0 END) AS pop_men,
+       SUM(CASE WHEN sex = '2' THEN pop ELSE 0 END) AS pop_wom
+  FROM Population
+ GROUP BY prefecture;
+
+
+■「図3.12::社員テーブルのサンプル」を作成
+CREATE TABLE Employees
+(emp_id    CHAR(3)  NOT NULL,
+ team_id   INTEGER  NOT NULL,
+ emp_name  CHAR(16) NOT NULL,
+ team      CHAR(16) NOT NULL,
+    PRIMARY KEY(emp_id, team_id));
+
+INSERT INTO Employees VALUES('201',	1,	'Joe',	'商品企画');
+INSERT INTO Employees VALUES('201',	2,	'Joe',	'開発');
+INSERT INTO Employees VALUES('201',	3,	'Joe',	'営業');
+INSERT INTO Employees VALUES('202',	2,	'Jim',	'開発');
+INSERT INTO Employees VALUES('203',	3,	'Carl',	'営業');
+INSERT INTO Employees VALUES('204',	1,	'Bree',	'商品企画');
+INSERT INTO Employees VALUES('204',	2,	'Bree',	'開発');
+INSERT INTO Employees VALUES('204',	3,	'Bree',	'営業');
+INSERT INTO Employees VALUES('204',	4,	'Bree',	'管理');
+INSERT INTO Employees VALUES('205',	1,	'Kim',	'商品企画');
+INSERT INTO Employees VALUES('205',	2,	'Kim',	'開発');
+
+
+■リスト3.5 UNIONで条件分岐させたコード
+SELECT emp_name,
+       MAX(team) AS team
+  FROM Employees 
+ GROUP BY emp_name
+HAVING COUNT(*) = 1
+UNION
+SELECT emp_name,
+       '2つを兼務' AS team
+  FROM Employees 
+ GROUP BY emp_name
+HAVING COUNT(*) = 2
+UNION
+SELECT emp_name,
+       '3つ以上を兼務' AS team
+  FROM Employees 
+ GROUP BY emp_name
+HAVING COUNT(*) >= 3;
+
+
+■リスト3.6 SELECT句でCASE式を使う
+SELECT emp_name,
+       CASE WHEN COUNT(*) = 1 THEN MAX(team)
+            WHEN COUNT(*) = 2 THEN '2つを兼務'
+            WHEN COUNT(*) >= 3 THEN '3つ以上を兼務'
+        END AS team
+  FROM Employees
+ GROUP BY emp_name;
+
+
+■「図3.16::ThreeElementsテーブルのサンプル」を作成
+CREATE TABLE ThreeElements
+(key    CHAR(8),
+ name   VARCHAR(32),
+ date_1 DATE,
+ flg_1  CHAR(1),
+ date_2 DATE,
+ flg_2  CHAR(1),
+ date_3 DATE,
+ flg_3  CHAR(1),
+    PRIMARY KEY(key));
+
+INSERT INTO ThreeElements VALUES ('1', 'a', '2013-11-01', 'T', NULL, NULL, NULL, NULL);
+INSERT INTO ThreeElements VALUES ('2', 'b', NULL, NULL, '2013-11-01', 'T', NULL, NULL);
+INSERT INTO ThreeElements VALUES ('3', 'c', NULL, NULL, '2013-11-01', 'F', NULL, NULL);
+INSERT INTO ThreeElements VALUES ('4', 'd', NULL, NULL, '2013-12-30', 'T', NULL, NULL);
+INSERT INTO ThreeElements VALUES ('5', 'e', NULL, NULL, NULL, NULL, '2013-11-01', 'T');
+INSERT INTO ThreeElements VALUES ('6', 'f', NULL, NULL, NULL, NULL, '2013-12-01', 'F');
+
+CREATE INDEX IDX_1 ON ThreeElements (date_1, flg_1) ;
+CREATE INDEX IDX_2 ON ThreeElements (date_2, flg_2) ;
+CREATE INDEX IDX_3 ON ThreeElements (date_3, flg_3) ;
+
+■リスト3.8 UNIONによる解
+SELECT key, name,
+       date_1, flg_1,
+       date_2, flg_2,
+       date_3, flg_3
+  FROM ThreeElements
+ WHERE date_1 = '2013-11-01'
+   AND flg_1 = 'T'
+UNION
+SELECT key, name,
+       date_1, flg_1,
+       date_2, flg_2,
+       date_3, flg_3
+  FROM ThreeElements
+ WHERE date_2 = '2013-11-01'
+   AND flg_2 = 'T'
+UNION
+SELECT key, name,
+       date_1, flg_1,
+       date_2, flg_2,
+       date_3, flg_3
+  FROM ThreeElements
+ WHERE date_3 = '2013-11-01'
+   AND flg_3 = 'T';
+
+■リスト3.9 ORによる解
+SELECT key, name,
+       date_1, flg_1,
+       date_2, flg_2,
+       date_3, flg_3
+  FROM ThreeElements
+ WHERE (date_1 = '2013-11-01' AND flg_1 = 'T')
+    OR (date_2 = '2013-11-01' AND flg_2 = 'T')
+    OR (date_3 = '2013-11-01' AND flg_3 = 'T');
+
+
+■リスト3.10 INによる解
+SELECT key, name,
+       date_1, flg_1,
+       date_2, flg_2,
+       date_3, flg_3
+  FROM ThreeElements
+ WHERE ('2013-11-01', 'T')
+         IN ((date_1, flg_1),
+             (date_2, flg_2),
+             (date_3, flg_3));
+
+
+■リスト3.11 CASE式による解
+SELECT key, name,
+       date_1, flg_1,
+       date_2, flg_2,
+       date_3, flg_3
+  FROM ThreeElements
+ WHERE CASE WHEN date_1 = '2013-11-01' THEN flg_1
+            WHEN date_2 = '2013-11-01' THEN flg_2
+            WHEN date_3 = '2013-11-01' THEN flg_3
+       ELSE NULL END = 'T';
+
+■演習問題3で追加するデータ
+INSERT INTO ThreeElements VALUES ('7', 'g', '2013-11-01', 'F', NULL, NULL, '2013-11-01', 'T');
+
+

@@ -1,0 +1,262 @@
+■「図2.1::住所テーブルのサンプル」を作成
+
+CREATE TABLE Address
+(name       VARCHAR(32) NOT NULL,
+ phone_nbr  VARCHAR(32) ,
+ address    VARCHAR(32) NOT NULL,
+ sex        CHAR(4) NOT NULL,
+ age        INTEGER NOT NULL,
+ PRIMARY KEY (name));
+
+INSERT INTO Address VALUES('小川',	'080-3333-XXXX',	'東京都',	'男',	30);
+INSERT INTO Address VALUES('前田',	'090-0000-XXXX',	'東京都',	'女',	21);
+INSERT INTO Address VALUES('森',	'090-2984-XXXX',	'東京都',	'男',	45);
+INSERT INTO Address VALUES('林',	'080-3333-XXXX',	'福島県',	'男',	32);
+INSERT INTO Address VALUES('井上',	NULL,	            	'福島県',	'女',	55);
+INSERT INTO Address VALUES('佐々木',	'080-5848-XXXX',	'千葉県',	'女',	19);
+INSERT INTO Address VALUES('松本',	NULL,	            	'千葉県',	'女',	20);
+INSERT INTO Address VALUES('佐藤',	'090-1922-XXXX',	'三重県',	'女',	25);
+INSERT INTO Address VALUES('鈴木',	'090-0001-XXXX',	'和歌山県',	'男',	32);
+
+■リスト2.1 SELECTでテーブルの中身をすべて選択する
+SELECT name, phone_nbr, address, sex, age
+  FROM Address;
+
+■リスト2.2 WHERE句で検索する内容を絞り込む
+SELECT name, address
+  FROM Address
+ WHERE address = '千葉県';
+
+■リスト2.3 年齢が30歳以上
+SELECT name, age
+  FROM Address
+ WHERE age >= 30;
+
+■リスト2.4 住所が東京都以外
+SELECT name, address
+  FROM Address
+ WHERE address <> '東京都';
+
+■リスト2.5 ANDは集合の共通部分を選択する
+SELECT name, address, age
+  FROM Address
+ WHERE address = '東京都'
+   AND age >= 30;
+
+■リスト2.6 ORは集合の和集合を選択する
+SELECT name, address, age
+  FROM Address
+ WHERE address = '東京都'
+    OR age >= 30;
+
+■リスト2.7 OR条件を複数指定している
+SELECT name, address
+  FROM Address
+ WHERE address = '東京都'
+    OR address = '福島県'
+    OR address = '千葉県';
+
+■リスト2.8 INを使った記述
+SELECT name, address
+  FROM Address
+ WHERE address IN ('東京都', '福島県', '千葉県');
+
+■リスト2.9 このSELECT文はうまくいかない
+SELECT name, address
+  FROM Address
+ WHERE phone_nbr = NULL;
+
+■リスト2.10 意図したデータを選択できるSELECT文
+SELECT name, phone_nbr
+  FROM Address
+ WHERE phone_nbr IS NULL;
+
+■リスト2.11 男女別に人数を数える
+SELECT sex, COUNT(*)
+  FROM Address
+ GROUP BY sex;
+
+■リスト2.12 住所別に人数を数える
+SELECT address, COUNT(*)
+  FROM Address
+ GROUP BY address;
+
+■リスト2.13 全員の人数を数える
+SELECT COUNT(*)
+  FROM Address
+ GROUP BY ( );
+
+■GROUP BY句の省略
+SELECT COUNT(*)
+  FROM Address;
+
+■リスト2.14 1人だけの都道府県を選択
+SELECT address, COUNT(*)
+  FROM Address
+ GROUP BY address
+HAVING COUNT(*) = 1;
+
+■リスト2.15 年齢が高い順にレコードを並べる
+SELECT name, phone_nbr, address, sex, age
+  FROM Address
+ ORDER BY age DESC;
+
+■リスト2.16 ビューの作成
+CREATE VIEW CountAddress (v_address, cnt)
+AS
+SELECT address, COUNT(*)
+  FROM Address
+ GROUP BY address;
+
+■リスト2.17 ビューの使用
+SELECT v_address, cnt
+  FROM CountAddress; 
+
+■リスト2.18 ビューではSELECT文が入れ子になっている
+--ビューからデータを選択する
+SELECT v_address, cnt
+  FROM CountAddress;
+
+--ビューは実行時にはSELECT文に展開される
+SELECT v_address, cnt
+  FROM (SELECT address AS v_address, COUNT(*) AS cnt
+          FROM Address
+         GROUP BY address) AS CountAddress;
+
+
+■「図2.7::Address2テーブル」を作成
+
+CREATE TABLE Address2
+(name       VARCHAR(32) NOT NULL,
+ phone_nbr  VARCHAR(32) ,
+ address    VARCHAR(32) NOT NULL,
+ sex        CHAR(4) NOT NULL,
+ age        INTEGER NOT NULL,
+ PRIMARY KEY (name));
+
+INSERT INTO Address2 VALUES('小川',	'080-3333-XXXX',	'東京都',	'男',	30);
+INSERT INTO Address2 VALUES('林',	'080-3333-XXXX',	'福島県',	'男',	32);
+INSERT INTO Address2 VALUES('武田',	NULL,			'福島県',	'男',	18);
+INSERT INTO Address2 VALUES('斉藤',	'080-2367-XXXX',	'千葉県',	'女',	19);
+INSERT INTO Address2 VALUES('上野',	NULL,			'千葉県',	'女',	20);
+INSERT INTO Address2 VALUES('広田',	'090-0205-XXXX',	'三重県',	'男',	25);
+
+
+■リスト2.19 INの中でサブクエリを利用する
+SELECT name
+  FROM Address
+ WHERE name IN (SELECT name -- INの中にサブクエリ
+                  FROM Address2);
+
+■リスト2.20 サブクエリから先に実行される
+SELECT name
+  FROM Address
+ WHERE name IN ('小川', '林', '武田', '斉藤', '上野', '広田');
+
+
+■リスト2.22 都道府県を地方にまとめるCASE式
+SELECT name, address,
+       CASE WHEN address = '東京都' THEN '関東'
+            WHEN address = '千葉県' THEN '関東'
+            WHEN address = '福島県' THEN '東北'
+            WHEN address = '三重県' THEN '中部'
+            WHEN address = '和歌山県' THEN '関西'
+            ELSE NULL END AS district
+  FROM Address;
+
+■リスト2.23 UNIONで和集合を求める
+SELECT *
+  FROM Address
+UNION
+SELECT *
+  FROM Address2;
+
+
+■リスト2.24 INTERSECTで積集合を求める
+SELECT *
+  FROM Address
+INTERSECT
+SELECT *
+  FROM Address2;
+
+■リスト2.25 EXCEPTで差集合を求める
+SELECT *
+  FROM Address
+EXCEPT
+SELECT *
+  FROM Address2;
+
+■リスト2.27 ウィンドウ関数で住所別人数を調べるSQL
+SELECT address,
+       COUNT(*) OVER(PARTITION BY address)
+  FROM Address;
+
+■リスト2.28 ウィンドウ関数でランキング
+SELECT name,
+       age,
+       RANK() OVER(ORDER BY age DESC) AS rnk
+  FROM Address;
+
+■リスト2.29 ウィンドウ関数でランキング（抜け番なし）
+SELECT name,
+       age,
+       DENSE_RANK() OVER(ORDER BY age DESC) AS dense_rnk
+  FROM Address;
+
+■リスト2.30 小川さんをAddressテーブルに追加
+INSERT INTO Address (name, phone_nbr, address, sex, age)
+             VALUES ('小川', '080-3333-XXXX', '東京都', '男', 30);
+
+
+■リスト2.31 9行を一度に追加する
+INSERT INTO Address (name, phone_nbr, address, sex, age)
+              VALUES('小川', '080-3333-XXXX', '東京都', '男', 30),
+                    ('前田', '090-0000-XXXX', '東京都', '女', 21),
+                    ('森', '090-2984-XXXX', '東京都', '男', 45),
+                    ('林', '080-3333-XXXX', '福島県', '男', 32),
+                    ('井上', NULL, '福島県', '女', 55),
+                    ('佐々木', '080-5848-XXXX', '千葉県', '女', 19),
+                    ('松本', NULL, '千葉県', '女', 20),
+                    ('佐藤', '090-1922-XXXX', '三重県', '女', 25),
+                    ('鈴木', '090-0001-XXXX', '和歌山県', '男', 32);
+
+■リスト2.32 Addressテーブルのデータを削除
+DELETE FROM Address;
+
+■リスト2.33 一部のレコードだけを削除
+DELETE FROM Address
+ WHERE address = '千葉県';
+
+■リスト2.34 更新前のデータ
+SELECT *
+  FROM Address;
+
+■リスト2.35 佐々木さんの電話番号を更新
+UPDATE Address
+   SET phone_nbr = '080-5849-XXXX'
+ WHERE name = '佐々木';
+
+■リスト2.36 更新後のデータ
+SELECT *
+  FROM Address;
+
+■リスト2.37 UPDATE文を2回実行して更新する
+UPDATE Address
+   SET phone_nbr = '080-5848-XXXX'
+ WHERE name = '佐々木';
+
+UPDATE Address
+   SET age = 20
+ WHERE name = '佐々木';
+
+■リスト2.38 1つのUPDATE文にまとめて更新する
+--1.列をカンマ区切りで並べる
+UPDATE Address
+   SET phone_nbr = '080-5848-XXXX',
+       age = 20
+ WHERE name = '佐々木';
+
+--2.列を括弧で囲むことによるリスト表現
+UPDATE Address
+   SET (phone_nbr, age) = ('080-5848-XXXX', 20)
+ WHERE name = '佐々木';

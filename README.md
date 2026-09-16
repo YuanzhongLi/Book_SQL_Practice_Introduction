@@ -1,1 +1,1 @@
-# Book_SQL_Practice_Introduction
+# SQL 実践入門 本

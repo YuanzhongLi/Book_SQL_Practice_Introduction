@@ -1,0 +1,55 @@
+■リスト10.1 注文テーブルの定義
+CREATE TABLE Orders
+(order_id  CHAR(8) NOT NULL,
+ shop_id   CHAR(4) NOT NULL,
+ shop_name VARCHAR(256) NOT NULL,
+ receive_date DATE NOT NULL,
+ process_flg CHAR(1) NOT NULL,
+    CONSTRAINT pk_Orders PRIMARY KEY(order_id));
+
+■リスト10.2 ケース1：絞り込み条件が存在しない
+  SELECT order_id, receive_date
+    FROM Orders;
+
+■リスト10.3 ケース2：絞り込み条件は存在するが、ほとんど絞り込めない
+SELECT order_id, receive_date
+  FROM Orders
+ WHERE process_flg = '5';
+
+
+■リスト10.4 ケース2'：ユーザの入力パラメータによって選択率が変動する
+SELECT order_id
+  FROM Orders
+ WHERE receive_date BETWEEN :start_date AND :end_date;
+
+■リスト10.5 ケース2''：ユーザの入力パラメータによって選択率が変動する
+SELECT COUNT(*)
+  FROM Orders
+ WHERE shop_id = :sid;
+
+
+■リスト10.6 ケース3：絞り込みは効くが、インデックスが使えない検索条件
+SELECT order_id
+  FROM Orders
+ WHERE shop_name LIKE '%佐世保%';
+
+
+■リスト10.11 データマート
+CREATE TABLE OrderMart
+(order_id     CHAR(4) NOT NULL,
+ receive_date DATE NOT NULL);
+
+■リスト10.12 ケース1：絞り込み条件が存在しなくても高速化できる
+SELECT order_id, receive_date
+  FROM OrderMart;
+
+■リスト10.14 カバリングインデックス
+CREATE INDEX CoveringIndex ON Orders (order_id, receive_date);
+
+■リスト10.17 リスト10.15に対応するカバリングインデックスを作成
+CREATE INDEX CoveringIndex_1 ON Orders (process_flg, order_id, receive_date);
+
+■リスト10.18 リスト10.16に対応するカバリングインデックスを作成
+CREATE INDEX CoveringIndex_2 ON Orders (receive_shop, order_id, receive_date);
+
+
