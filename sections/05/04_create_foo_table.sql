@@ -1,0 +1,3 @@
+CREATE TABLE Foo
+( p_key INTEGER PRIMARY KEY,
+  col_a INTEGER );
