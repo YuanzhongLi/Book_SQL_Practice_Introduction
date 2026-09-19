@@ -1,0 +1,6 @@
+CREATE TABLE Persons
+(name   VARCHAR(8) NOT NULL,
+ age    INTEGER NOT NULL,
+ height FLOAT NOT NULL,
+ weight FLOAT NOT NULL,
+ PRIMARY KEY (name));
