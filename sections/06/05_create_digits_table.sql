@@ -1,0 +1,2 @@
+CREATE TABLE Digits
+(digit INTEGER PRIMARY KEY);
